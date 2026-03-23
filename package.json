@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/orisCode2023/find-shelter/issues"
   },
-  "homepage": "https://github.com/orisCode2023/find-shelter#readme"
+  "homepage": "https://github.com/orisCode2023/find-shelter#readme",
+  "dependencies": {
+    "zustand": "^5.0.12"
+  }
 }
