@@ -41,7 +41,7 @@ def fetch_and_convert_shelters():
                 except Exception:
                     continue
 
-        output_file = "shelter_coords_clean.json"
+        output_file = "shelters.json"
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(final_coords_only, f, ensure_ascii=False, indent=2)
 
