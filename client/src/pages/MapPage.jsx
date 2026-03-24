@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import L from "leaflet";
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import useShelterStore from "../store/useStoreShelter.js";
 
 let DefaultIcon = L.icon({
     iconUrl: markerIcon,
@@ -24,6 +25,7 @@ function RecenterAutomatically({ position }) {
 function MapPage() {
     const [myPosition, setMyPosition] = useState([32.0853, 34.7818]);
     const [loading, setLoading] = useState(true);
+    const { shelters, loadShelters } = useShelterStore();
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(

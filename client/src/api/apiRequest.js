@@ -1,6 +1,6 @@
 const BASE_URL = "http://localhost:5000";
 
-async function request(path) {
+async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
 
   const res = await fetch(url, {
