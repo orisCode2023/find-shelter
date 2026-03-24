@@ -28,6 +28,14 @@ function MapPage() {
     const { shelters, loadShelters } = useShelterStore();
 
     useEffect(() => {
+        const fetchData = async () => {
+            await loadShelters();
+        };
+
+        fetchData().catch(console.error);
+    }, [loadShelters]);
+
+    useEffect(() => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
