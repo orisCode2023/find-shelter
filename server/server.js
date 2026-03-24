@@ -3,6 +3,7 @@ import cors from 'cors'
 import sheltersRouter from './src/routers/shelters.router.js'
 import dotenv from 'dotenv'
 import { connectDB } from './src/db/mongo.js'
+import { createShelters } from './src/services/putShelters.js'
 
 dotenv.config()
 const app = express()
@@ -13,6 +14,8 @@ app.use(express.json())
 
 
 await connectDB()
+await createShelters()
+
 
 app.use('/shelters', sheltersRouter)
 
