@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 *.json
 node_modules
+.env

@@ -1,5 +1,7 @@
-import HomePage from "./pages/HomePage";
 import "./styles/App.css";
+import "leaflet/dist/leaflet.css";
+import HomePage from "./pages/HomePage";
+import MapPage from "./pages/MapPage";
 import { Routes, Route } from "react-router"
 
 function App() {
@@ -8,6 +10,7 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/map" element={<MapPage />} />
       </Routes>
     </>
   )

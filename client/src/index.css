@@ -11,34 +11,3 @@ body {
   text-align: center;
   gap: 1rem;
 }
-
-.alertDiv {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-}
-
-.notActive {
-  color: rgb(8, 171, 8);
-}
-
-.active {
-  color: rgb(179, 10, 10);
-}
-
-.findShelterButton {
-  padding: 0.5rem;
-  background-color: crimson;
-  color: aliceblue;
-  font-weight: bold;
-  font-size: 2rem;
-  border-radius: 25px;
-}
-
-.findShelterButton:hover {
-  background-color: aliceblue;
-  color: crimson;
-  cursor: grab;
-}

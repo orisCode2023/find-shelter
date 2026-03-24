@@ -1,5 +1,4 @@
 import { getDB } from "../db/mongo.js";
-
 export async function getAllShelters () {
     try {
         const db = getDB();

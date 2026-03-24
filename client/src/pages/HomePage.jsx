@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 function HomePage() {
     const isAlertActive = true;
 
@@ -11,7 +13,7 @@ function HomePage() {
             {isAlertActive &&
                 <div className="alertDiv">
                     <h1 className="active">יש התרעות באזורך, נא להיכנס למרחב מוגן</h1>
-                    <button className="findShelterButton">מצא מרחב מוגן קרוב</button>
+                    <Link to={"/map"} className="findShelterButton">מצא מרחב מוגן קרוב</Link>
                 </div>
             }
             <p>©כל הזכויות שמורות לsafeZoneAi</p>
