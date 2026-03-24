@@ -1,56 +1,22 @@
-const BASE_URL = "http://localhost:5000";
+// const BASE_URL = "http://localhost:5000";
 
-async function request(path,options) {
-  const url = `${BASE_URL}${path}`;
-  const {headers, ...rest} = options;
-  const res = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      ...headers
-    },
-    rest,
-  });
+// async function request(path) {
+//   const url = `${BASE_URL}${path}`;
 
-  if (!res.ok) {
-    throw new Error(`Error in the api request`);
-  }
-  return res.json();
-}
-
-
-export async function fetchAllShelters() {
-  const result = await request("/shelters", {});
-  console.log(result)
-  return result
-}
-
-
-// export async function fetchShelterById(id) {
-//   return request(`/shelters/${id}`);
-// }
-
-// export async function createShelter(data) {
-//   return request("/shelters", {
-//     method: "POST",
-//     body: JSON.stringify(data),
+//   const res = await fetch(url, {
+//     method: 'GET',
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     cache: 'no-cache'
 //   });
+
+//   if (!res.ok) {
+//     throw new Error(`Error in the api request`);
+//   }
+//   return res.json();
+// }
+// export async function fetchAllShelters() {
+//   return await request("/shelters");
 // }
 
-// export async function updateShelter(id, data) {
-//   return request(`/shelters/${id}`, {
-//     method: "PUT",
-//     body: JSON.stringify(data),
-//   });
-// }
-
-// export async function patchShelter(id, patch) {
-//   return request(`/shelters/${id}`, {
-//     method: "PATCH",
-//     body: JSON.stringify(patch),
-//   });
-// }
-
-
-// export async function deleteShelter(id) {
-//   return request(`/shelters/${id}`, { method: "DELETE" });
-// }
