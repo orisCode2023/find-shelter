@@ -18,15 +18,14 @@ export async function getShelters (req, res) {
     }
 };
 
-export const findNearby = async (req, res) => {
+export async function findNearby(req, res) {
     try {
-        const { lat, lng } = req.body;
+        const { lat, lon } = req.body;
 
-        if (!lat || !lng) {
+        if (!lat || !lon) {
             return res.status(400).json({ message: "Latitude and Longitude are required" });
         }
-
-        const shelters = await getNearestShelters(lat, lng);
+        const shelters = await getNearestShelters(Number(lat), Number(lon));
         res.status(200).json(shelters);
     } catch (error) {
         res.status(500).json({ message: error.message });
