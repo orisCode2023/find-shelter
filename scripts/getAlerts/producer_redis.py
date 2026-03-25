@@ -7,7 +7,6 @@ def run_producer():
 
     for alert in listen_and_return_alerts():
         r.publish("alerts_channel", json.dumps(alert, ensure_ascii=False))
-        print(r)
 
 if __name__ == "__main__":
     run_producer()
