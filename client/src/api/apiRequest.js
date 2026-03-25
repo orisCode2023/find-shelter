@@ -1,14 +1,15 @@
-const BASE_URL = "http://localhost:5000";
+// const BASE_URL = "http://localhost:3000";
+const BASE_URL = "https://find-shelter-api.onrender.com/shelters";
 
-async function request(path) {
+export async function requestPost(path, bodyData) {
   const url = `${BASE_URL}${path}`;
 
   const res = await fetch(url, {
-    method: 'GET',
+    method: 'POST',
     headers: {
       "Content-Type": "application/json",
     },
-    cache: 'no-cache'
+   body: JSON.stringify(bodyData)
   });
 
   if (!res.ok) {
@@ -16,7 +17,5 @@ async function request(path) {
   }
   return res.json();
 }
-export async function fetchAllShelters() {
-  return await request("/shelters");
-}
+
 

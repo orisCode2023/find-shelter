@@ -1,21 +1,30 @@
 import { create } from "zustand";
-// import { fetchAllShelters } from "../api/apiRequest.js";
+import { requestPost } from "../api/apiRequest.js";
 
 const useShelterStore = create((set) => ({
   shelters: [],
-  error: null,
 
   loadShelters: async () => {
-    set({error: null });
     try {
-      const res = await fetch('http://localhost:3000/shelters', {
-        cache: 'no-cache'
+      const res = await fetch("http://localhost:3000/shelters", {
+        cache: "no-cache",
       });
       set({ shelters: await res.json() });
     } catch (err) {
-      set({ error: err.message});
+      console.log(console.error(err.message));
+    }
+  },
+  findShelter: async (userLocation) => {
+    try {
+      const res = await requestPost('/nearby', {
+        lat: userLocation.latitude,
+        lon: userLocation.longitude,
+      });
+      set({ shelters: res });
+    } catch (error) {
+      console.log(console.error(error.message));
     }
   },
 }));
 
-export default useShelterStore
+export default useShelterStore;
