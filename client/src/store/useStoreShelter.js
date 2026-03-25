@@ -16,7 +16,7 @@ const useShelterStore = create((set) => ({
   },
   findShelter: async (userLocation) => {
     try {
-      const res = await requestPost('/shelters/nearby', {
+      const res = await requestPost('/nearby', {
         lat: userLocation.latitude,
         lon: userLocation.longitude,
       });
