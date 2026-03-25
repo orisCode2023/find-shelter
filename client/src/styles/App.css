@@ -36,6 +36,11 @@
   cursor: grab;
 }
 
+.mapDiv {
+  width: 100%;
+  height: 100vh;
+}
+
 .mapContainer {
   display: flex;
   flex-direction: column;
@@ -120,4 +125,31 @@
 .leaflet-popup-content {
   margin: 13px 19px;
   line-height: 1.4;
+}
+
+.recenterButton {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  background-color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #555;
+}
+
+.recenterButton:hover {
+  background-color: #f8f8f8;
+}
+
+.recenterButton.active {
+  color: #1a73e8;
 }

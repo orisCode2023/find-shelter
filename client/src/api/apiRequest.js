@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:3000";
+// const BASE_URL = "http://localhost:3000";
+const BASE_URL = "https://find-shelter-api.onrender.com/shelters";
 
 export async function requestPost(path, bodyData) {
   const url = `${BASE_URL}${path}`;
