@@ -14,7 +14,7 @@ async function startRedisListener(io) {
       
       console.log(`🚀 new allert: ${alertData.location} - ${alertData.title}`);
 
-      io.emit('new_pikuad_alert', alertData);
+      io.emit('red_alert', alertData);
       
     });
   } catch (error) {
