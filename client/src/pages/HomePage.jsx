@@ -11,7 +11,7 @@ function HomePage() {
             {/* Hero Section */}
             <section className="hero">
                 <div className="hero-content">
-                    <h1 className="main-title">safeZoneAi</h1>
+                    <h1 className="main-title">התראה ולמקלט 🙌</h1>
                     <p className="hero-subtitle">
                         טכנולוגיה מצילת חיים. מערכת התראות בזמן אמת וניווט חכם למרחב המוגן הקרוב ביותר.
                     </p>

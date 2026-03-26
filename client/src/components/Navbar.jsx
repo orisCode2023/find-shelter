@@ -25,7 +25,7 @@ const Navbar = () => {
         <nav style={styles.nav}>
             <div style={styles.logoContainer} onClick={() => navigate('/')}>
                 <span style={styles.logoIcon}>🛡️</span>
-                <span style={styles.logoText}>safeZoneAi</span>
+                <span style={styles.logoText}>התראה ולמקלט</span>
             </div>
 
             <div style={styles.actions}>
