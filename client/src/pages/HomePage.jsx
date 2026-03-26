@@ -1,24 +1,75 @@
+import React from 'react';
 import { Link } from "react-router";
+import '../styles/HomePage.css';
 
 function HomePage() {
-    const isAlertActive = true;
+    // ניתן בעתיד למשוך את הסטטוס הזה מה-Global State של האפליקציה
+    const isAlertActive = false; 
 
     return (
-        <div>
-            {!isAlertActive &&
-                <div className="alertDiv noAlert">
-                    <h1 className="notActive">אין כרגע התרעות באיזורך</h1>
+        <div className="home-container">
+            {/* Hero Section */}
+            <section className="hero">
+                <div className="hero-content">
+                    <h1 className="main-title">התראה ולמקלט 🙌</h1>
+                    <p className="hero-subtitle">
+                        טכנולוגיה מצילת חיים. מערכת התראות בזמן אמת וניווט חכם למרחב המוגן הקרוב ביותר.
+                    </p>
+                    
+                    <div className="status-box">
+                        {isAlertActive ? (
+                            <div className="alert-active">
+                                <span className="pulse-icon">⚠️</span>
+                                <h2>יש התרעות באזורך!</h2>
+                                <p>נא להיכנס למרחב מוגן באופן מיידי.</p>
+                                <Link to="/map" className="cta-button danger">מצא מרחב מוגן עכשיו</Link>
+                            </div>
+                        ) : (
+                            <div className="alert-none">
+                                <span className="check-icon">🛡️</span>
+                                <h2>האזור שלך שקט כרגע</h2>
+                                <p>המערכת סורקת את האזור בחיפוש אחר איומים 24/7.</p>
+                                <Link to="/map" className="cta-button secondary">צפה במפת המקלטים</Link>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            }
-            {isAlertActive &&
-                <div className="alertDiv alert">
-                    <h1 className="active">יש התרעות באזורך, נא להיכנס למרחב מוגן</h1>
-                    <Link to={"/map"} className="findShelterButton">מצא מרחב מוגן קרוב</Link>
+            </section>
+
+            <section className="features">
+                <div className="feature-card">
+                    <div className="icon">📡</div>
+                    <h3>זמן אמת</h3>
+                    <p>קישור ישיר למערכות ההתראה עם מינימום שיהוי.</p>
                 </div>
-            }
-            <p>©כל הזכויות שמורות לsafeZoneAi</p>
+                <div className="feature-card">
+                    <div className="icon">📍</div>
+                    <h3>17,000+ מקלטים</h3>
+                    <p>מאגר הנתונים הגדול והעדכני ביותר בישראל לניווט למחסה.</p>
+                </div>
+                <div className="feature-card">
+                    <div className="icon">🚶‍♂️</div>
+                    <h3>ניתוב מהיר</h3>
+                    <p>חישוב מסלול הגעה רגלי אופטימלי כדי שלא תבזבזו זמן יקר.</p>
+                </div>
+            </section>
+
+            <section className="emergency-info">
+                <h2>מוקדי חירום וסיוע</h2>
+                <div className="emergency-grid">
+                    <div className="contact-card"><strong>משטרה:</strong> 100</div>
+                    <div className="contact-card"><strong>מד"א:</strong> 101</div>
+                    <div className="contact-card"><strong>כיבוי אש:</strong> 102</div>
+                    <div className="contact-card"><strong>פיקוד העורף:</strong> 104</div>
+                </div>
+            </section>
+
+            <footer className="home-footer">
+                <p>© כל הזכויות שמורות ל-safeZoneAi 2026</p>
+                <p className="disclaimer">המערכת הינה כלי עזר ואינה מחליפה את הנחיות פיקוד העורף.</p>
+            </footer>
         </div>
-    )
+    );
 }
 
-export default HomePage
+export default HomePage;
