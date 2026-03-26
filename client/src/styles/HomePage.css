@@ -1,0 +1,123 @@
+.home-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    direction: rtl;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 100%);
+    color: white;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.main-title {
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    opacity: 0.9;
+}
+
+/* Status Box */
+.status-box {
+    background: white;
+    color: #1e293b;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: transform 0.2s;
+}
+
+.cta-button.danger { background-color: #ef4444; color: white; }
+.cta-button.secondary { background-color: #3b82f6; color: white; }
+.cta-button:hover { transform: scale(1.05); }
+
+/* Features */
+.features {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 60px 20px;
+    background-color: #f8fafc;
+    flex-wrap: wrap;
+}
+
+.feature-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 280px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.feature-card .icon { font-size: 2.5rem; margin-bottom: 15px; }
+
+/* Emergency Section */
+.emergency-info {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.emergency-info h2 {
+    color: #ef4444;
+}
+
+.emergency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.contact-card {
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    border-right: 4px solid #1e3a8a;
+}
+
+/* Footer */
+.home-footer {
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 40px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.disclaimer { font-size: 0.8rem; margin-top: 10px; }
+
+/* Animations */
+.pulse-icon {
+    display: inline-block;
+    animation: pulse 2s infinite;
+    font-size: 2rem;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}

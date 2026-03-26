@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight, ShieldCheck } from "lucide-react";
 import useShelterStore from "../store/useStoreShelter.js";
 import { useUserLocation } from "../hooks/useUserLocation.js";
 import { userIcon } from "../utils/mapIcons.js";
@@ -9,6 +9,7 @@ import RecenterButton from "../components/map/RecenterButton";
 import ShelterMarker from "../components/map/ShelterMarker";
 import RoutingMachine from "../components/map/RoutingMachine";
 import { NavLink } from "react-router";
+import "../styles/MapPage.css";
 
 function MapPage() {
   const [isAutoCenter, setIsAutoCenter] = useState(true);
@@ -16,74 +17,76 @@ function MapPage() {
   const { myPosition, loading } = useUserLocation();
   const { shelters } = useShelterStore();
 
-  return (
-    <div className="mapContainer">
-      {loading ? (
-        <div className="loaderWrapper">
-          <Loader2 className="spinner" size={40} color="crimson" />
-          <p className="loadingText">מאתר את המיקום שלך...</p>
+  if (loading) {
+    return (
+      <div className="loader-overlay">
+        <div className="loader-content">
+          <Loader2 className="spinner" size={50} />
+          <h2>מאתר מיקום מדויק...</h2>
         </div>
-      ) : (
-        <>
-          <div className="mapNavbar">
-            <NavLink to={"/"} className="navbarButton">חזרה לדף הבית 🏡</NavLink>
-          </div>
-          <div
-            className="mapDiv"
-            style={{ position: "relative" }}
-          >
-            <MapContainer
-              center={myPosition}
-              zoom={15}
-              scrollWheelZoom={true}
-              className="leaflet-container"
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+      </div>
+    );
+  }
 
-              <RecenterAutomatically
-                position={myPosition}
-                isAutoCenter={isAutoCenter}
-                setIsAutoCenter={setIsAutoCenter}
-              />
+  return (
+    <div className="map-page-wrapper">
+      <header className="map-header">
+        <NavLink to={"/"} className="back-link">
+          <ArrowRight size={20} /> חזרה
+        </NavLink>
+        <div className="map-stats">
+          <ShieldCheck size={18} color="#10b981" />
+          <span>{shelters?.length || 0} מקלטים באזור</span>
+        </div>
+      </header>
 
-              {selectedShelter && (
-                <RoutingMachine from={myPosition} to={selectedShelter} />
-              )}
+      <main className="map-main">
+        <MapContainer
+          center={myPosition}
+          zoom={15}
+          className="main-leaflet-map"
+        >
+          <TileLayer
+            attribution='&copy; OpenStreetMap'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-              <Marker position={myPosition} icon={userIcon}>
-                <Popup>אתה נמצא כאן!</Popup>
-              </Marker>
+          <RecenterAutomatically
+            position={myPosition}
+            isAutoCenter={isAutoCenter}
+            setIsAutoCenter={setIsAutoCenter}
+          />
 
-              {shelters
-                ?.filter((s) => s.lat && s.lon)
-                .map((shelter) => (
-                  <ShelterMarker
-                    key={shelter._id || `${shelter.lat}-${shelter.lon}`}
-                    shelter={shelter}
-                    onNavigate={setSelectedShelter}
-                  />
-                ))}
-            </MapContainer>
+          {selectedShelter && (
+            <RoutingMachine from={myPosition} to={selectedShelter} />
+          )}
 
-            {selectedShelter && (
-              <button
-                className="clearRouteButton"
-                onClick={() => setSelectedShelter(null)}
-              >
-                בטל ניווט ✕
-              </button>
-            )}
+          <Marker position={myPosition} icon={userIcon}>
+            <Popup>אתה כאן</Popup>
+          </Marker>
 
-            <RecenterButton
-              isAutoCenter={isAutoCenter}
-              onClick={() => setIsAutoCenter(true)}
+          {shelters?.filter((s) => s.lat && s.lon).map((shelter) => (
+            <ShelterMarker
+              key={shelter._id || `${shelter.lat}-${shelter.lon}`}
+              shelter={shelter}
+              onNavigate={setSelectedShelter}
             />
-          </div>
-        </>
-      )}
+          ))}
+        </MapContainer>
+
+        {/* פקדים צפים מעל המפה */}
+        <div className="map-overlay-controls">
+          {selectedShelter && (
+            <button className="btn-abort" onClick={() => setSelectedShelter(null)}>
+              ביטול ניווט ✕
+            </button>
+          )}
+          <RecenterButton
+            isAutoCenter={isAutoCenter}
+            onClick={() => setIsAutoCenter(true)}
+          />
+        </div>
+      </main>
     </div>
   );
 }
