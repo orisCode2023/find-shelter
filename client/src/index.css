@@ -10,4 +10,5 @@ body {
   flex-direction: column;
   text-align: center;
   gap: 1rem;
+  background-color: #1a2b3c;
 }

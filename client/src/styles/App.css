@@ -6,11 +6,23 @@
 .alertDiv {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 0.5rem;
   padding: 1rem;
+  margin-top: 2rem;
+  margin-right: 22.7rem;
+  width: 50rem;
+  border-radius: 15px;
+  align-items: center;
+  font-size: 1.5rem;
 }
 
+.noAlert {
+  background-color:chartreuse;
+}
+
+.alert {
+  background-color: #f28a8a;
+}
 .notActive {
   color: rgb(8, 171, 8);
 }
@@ -46,10 +58,17 @@
   width: 10rem;
   text-decoration: none;
   align-content: center;
+  border-radius: 25px;
   font-weight: bold;
   font-size: 1.2rem;
   color: rgb(19, 108, 186);
   background-color: #dbb719;
+  transition: all 0.3s ease-in-out;
+}
+
+.navbarButton:hover {
+  color: #dbb719;
+  background-color: rgb(19, 108, 186);
 }
 
 .mapDiv {
@@ -161,7 +180,7 @@
     0 4px 8px 3px rgba(60, 64, 67, 0.15);
   cursor: pointer;
   outline: none;
-  transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+  transition: all 0.3s ease-in-out;
   -webkit-tap-highlight-color: transparent;
 }
 
