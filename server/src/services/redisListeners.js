@@ -12,7 +12,7 @@ async function startRedisListener(io) {
     await subscriber.subscribe('alerts_channel', (message) => {
       const alertData = JSON.parse(message);
       
-      console.log(`🚀 new allert: ${alertData.location} - ${alertData.title}`);
+      console.log(`🚀 new allert: ${alertData.location} - ${alertData.title} - ${alertData.lng} - ${alertData.lat}`)
 
       io.emit('red_alert', alertData);
       

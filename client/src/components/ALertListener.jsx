@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 import * as geolib from 'geolib';
-// ייבוא הקובץ בדיוק מהנתיב שראיתי ב-TAR
-import alertSound from '../audio/alert-sound.mp3'; 
+import alertSound from '../audio/alert-sound.mp3';
+// import { useUserLocation } from '../hooks/useUserLocation.js'; 
 
 const SOCKET_SERVER_URL = "http://localhost:3000"; 
 
@@ -11,11 +11,11 @@ const AlertListener = () => {
     const [isUserInDanger, setIsUserInDanger] = useState(false);
     const socketRef = useRef(null);
     const audioRef = useRef(new Audio(alertSound));
+    // const { myPosition } = useUserLocation()
 
     useEffect(() => {
         socketRef.current = io(SOCKET_SERVER_URL);
 
-        // האזנה לאירוע - וודא שבבאקנד אתה שולח 'red_alert'
         socketRef.current.on("red_alert", (data) => {
             console.log("התקבלה התראה:", data);
             processAlert(data);
@@ -39,7 +39,6 @@ const AlertListener = () => {
                     longitude: position.coords.longitude
                 };
 
-                // המרה לפורמט של geolib במידה והבאקנד שולח lat/lng
                 const polygon = data.polygon.map(p => ({
                     latitude: p.lat,
                     longitude: p.lon
