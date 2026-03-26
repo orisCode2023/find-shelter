@@ -3,9 +3,10 @@ import { io } from 'socket.io-client';
 import * as geolib from 'geolib';
 import alertSound from '../audio/alert-sound.mp3';
 
+// קונפיגורציה
 const SOCKET_SERVER_URL = "http://localhost:3000"; 
-const DANGER_RADIUS = 12000; // 12 ק"מ לסכנה
-const NEARBY_RADIUS = 30000; // 30 ק"מ להתראה סמוכה
+const DANGER_RADIUS = 12000; // 12 ק"מ לסכנה (אדום)
+const NEARBY_RADIUS = 30000; // 30 ק"מ להתראה סמוכה (כתום)
 
 const AlertListener = () => {
     const [activeAlert, setActiveAlert] = useState(null);
@@ -13,67 +14,83 @@ const AlertListener = () => {
     const [userCity, setUserCity] = useState(""); 
     
     const lastKnownPos = useRef(null);
-    const userCityRef = useRef(""); // Ref נוסף כדי שהסוקט יראה תמיד את העיר המעודכנת
+    const userCityRef = useRef(""); 
     const socketRef = useRef(null);
     const audioRef = useRef(new Audio(alertSound));
 
-    // 1. פונקציה לעדכון מיקום ושם עיר (Reverse Geocoding)
-    const refreshLocationAndCity = async () => {
+    // --- 1. פונקציות עזר למיקום וניווט ---
+
+    const updateLocation = async () => {
         return new Promise((resolve) => {
             if (!navigator.geolocation) return resolve(null);
 
             navigator.geolocation.getCurrentPosition(async (position) => {
-                const { latitude, longitude } = position.coords;
-                lastKnownPos.current = { latitude, longitude };
-                
-                try {
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=he`
-                    );
-                    const data = await response.json();
-                    const city = data.address.city || data.address.town || data.address.village || data.address.settlement || "";
-                    if (city) {
-                        setUserCity(city);
-                        userCityRef.current = city; // מעדכן גם את ה-Ref
-                    }
-                    resolve({ latitude, longitude, city });
-                } catch (e) {
-                    resolve({ latitude, longitude, city: "" });
-                }
-            }, () => resolve(null), { enableHighAccuracy: true, timeout: 5000 });
-        });
-    };
-
-    // 2. ניהול סוקט, טסטים ומעקב GPS רציף
-    useEffect(() => {
-        // א. התחלת מעקב רציף (watchPosition)
-        const watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                lastKnownPos.current = {
+                const coords = {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude
                 };
-            },
-            null,
-            { enableHighAccuracy: true, maximumAge: 5000 }
-        );
+                lastKnownPos.current = coords;
 
-        // ב. זיהוי עיר ראשוני
-        refreshLocationAndCity();
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.latitude}&lon=${coords.longitude}&accept-language=he`
+                    );
+                    const data = await response.json();
+                    const city = data.address.city || data.address.town || data.address.village || "";
+                    if (city) {
+                        setUserCity(city);
+                        userCityRef.current = city;
+                    }
+                    resolve({ ...coords, city });
+                } catch (e) {
+                    resolve(coords);
+                }
+            }, (err) => {
+                console.error("GPS Error:", err);
+                resolve(null);
+            }, { enableHighAccuracy: true, timeout: 5000 });
+        });
+    };
 
-        // ג. חיבור לסוקט ורישום מאזינים (פעם אחת בלבד!)
+    const handleNavigate = () => {
+        if (!lastKnownPos.current) {
+            alert("מזהה מיקום... נסה שוב בעוד רגע");
+            updateLocation();
+            return;
+        }
+
+        const { latitude, longitude } = lastKnownPos.current;
+        
+        // כאן ניתן להחליף במיקום דינמי מה-DB של המקלטים
+        const destLat = 31.6038; 
+        const destLng = 34.7640;
+
+        // פורמט המבטיח קו ניווט כחול (Direction) ומצב הליכה (dirflg=w)
+        const url = `https://www.google.com/maps?saddr=${latitude},${longitude}&daddr=${destLat},${destLng}&dirflg=w`;
+        
+        window.open(url, '_blank');
+    };
+
+    // --- 2. ניהול סוקט ואירועים ---
+
+    useEffect(() => {
+        // הפעלה ראשונית ועדכון GPS רציף
+        updateLocation();
+        const watchId = navigator.geolocation.watchPosition((pos) => {
+            lastKnownPos.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        }, null, { enableHighAccuracy: true });
+
         socketRef.current = io(SOCKET_SERVER_URL);
 
         socketRef.current.on("red_alert", (data) => {
-            console.log("📥 התראה התקבלה מהסוקט:", data.location);
+            console.log("📥 התראה התקבלה:", data.location);
             processAlert(data);
         });
 
         const handleManualTest = (event) => {
-            console.log("🧪 טסט ידני הופעל");
+            console.log("🧪 בדיקת מערכת הופעלה");
             processAlert({ 
-                location: event.detail?.location || "יישוב בדיקה", 
-                description: "זוהי התראת בדיקה של המערכת",
+                location: event.detail?.location || "אזור בדיקה", 
                 isTest: true 
             });
         };
@@ -89,16 +106,11 @@ const AlertListener = () => {
     }, []);
 
     const processAlert = async (data) => {
-        // אם המערכת כבר ב"סכנה", אנחנו מעדכנים רק אם זו התראה נוספת בעיר שלנו
-        if (isUserInDanger && !data.isTest) {
-            if (userCityRef.current && data.location.includes(userCityRef.current)) {
-                setActiveAlert(data);
-            }
-            return;
-        }
+        // מניעת דריסה של מצב סכנה קיים על ידי התראה רחוקה יותר
+        if (isUserInDanger && !data.isTest) return;
 
-        const runCheck = (pos, city) => {
-            const isCityMatch = city && data.location.includes(city);
+        const checkLogic = (pos, city) => {
+            const isCityMatch = city && data.location && data.location.includes(city);
             let distance = null;
 
             if (pos && data.lat && data.lng) {
@@ -112,44 +124,36 @@ const AlertListener = () => {
             const nearby = distance && distance <= NEARBY_RADIUS;
 
             if (danger) {
-                console.log(`🚨 סכנה זוהתה ב-${data.location}`);
                 setActiveAlert(data);
                 setIsUserInDanger(true);
                 playSiren();
                 return true;
             } else if (nearby) {
-                console.log(`📢 אזור סמוך זוהה ב-${data.location}`);
                 setActiveAlert(data);
                 setIsUserInDanger(false);
-                return false;
             }
             return false;
         };
 
-        // בדיקה 1: מיידית לפי מה שיש בזיכרון (מונע איבוד התראות במטח)
-        const foundDanger = runCheck(lastKnownPos.current, userCityRef.current);
+        // שלב א': בדיקה מיידית מול זיכרון (למניעת איבוד התראות במטח)
+        const found = checkLogic(lastKnownPos.current, userCityRef.current);
 
-        // בדיקה 2: "וידוא הריגה" עם GPS טרי (למקרה שנסעת לאחרונה)
-        if (!foundDanger && !data.isTest) {
-            const freshData = await refreshLocationAndCity();
-            if (freshData) {
-                runCheck({ latitude: freshData.latitude, longitude: freshData.longitude }, freshData.city);
-            }
+        // שלב ב': אם לא נמצאה סכנה, רענון GPS שקט ליתר ביטחון
+        if (!found && !data.isTest) {
+            const fresh = await updateLocation();
+            if (fresh) checkLogic(fresh, fresh.city);
         }
     };
 
     const playSiren = () => {
-        const audio = audioRef.current;
-        audio.loop = true;
-        audio.play().catch(() => console.log("לחץ על המסך כדי לאפשר סאונד"));
+        audioRef.current.loop = true;
+        audioRef.current.play().catch(() => console.log("אודיו נחסם ע\"י הדפדפן"));
         if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
     };
 
     const stopAlert = () => {
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-        }
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
         setIsUserInDanger(false);
         setActiveAlert(null);
     };
@@ -158,40 +162,55 @@ const AlertListener = () => {
 
     return (
         <div style={styles.overlay}>
-            <div style={isUserInDanger ? styles.dangerBox : styles.infoBox}>
+            <div style={{
+                ...(isUserInDanger ? styles.dangerBox : styles.infoBox),
+                animation: isUserInDanger ? 'pulseAlert 1.5s infinite' : 'none'
+            }}>
                 <div style={styles.header}>
-                    <span>{isUserInDanger ? "🚨" : "📢"}</span>
+                    <span style={styles.icon}>{isUserInDanger ? "🚨" : "📢"}</span>
                     <h2 style={styles.title}>
                         {isUserInDanger ? "צבע אדום באזורך!" : "התראה באזור סמוך"}
                     </h2>
                 </div>
                 
                 <p style={styles.locationName}>{activeAlert.location}</p>
-                <p style={styles.description}>{activeAlert.description}</p>
                 
-                {activeAlert.time && <p style={styles.timeTag}>זמן: {activeAlert.time}</p>}
+                {isUserInDanger && (
+                    <div style={styles.navContainer}>
+                        <button onClick={handleNavigate} style={styles.btnNavigate}>
+                            🏃‍♂️ נווט למקלט הכי קרוב
+                        </button>
+                    </div>
+                )}
 
                 <div style={styles.actions}>
-                    <button onClick={stopAlert} style={isUserInDanger ? styles.btnDanger : styles.btnClose}>
-                        {isUserInDanger ? "הבנתי, הפסק סירנה" : "סגור"}
+                    <button onClick={stopAlert} style={styles.btnStop}>
+                        {isUserInDanger ? "הפסק סירנה" : "סגור"}
                     </button>
                 </div>
             </div>
+
+            <style>{`
+                @keyframes pulseAlert {
+                    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+                    70% { transform: scale(1.03); box-shadow: 0 0 0 20px rgba(220, 38, 38, 0); }
+                    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+                }
+            `}</style>
         </div>
     );
 };
 
 const styles = {
-    overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10000, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '50px' },
-    dangerBox: { pointerEvents: 'auto', background: '#dc2626', color: 'white', padding: '25px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 10px 50px rgba(0,0,0,0.5)', width: '90%', maxWidth: '400px', border: '4px solid white' },
-    infoBox: { pointerEvents: 'auto', background: '#f59e0b', color: 'black', padding: '20px', borderRadius: '12px', textAlign: 'center', width: '90%', maxWidth: '350px', boxShadow: '0 5px 20px rgba(0,0,0,0.3)' },
-    header: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginBottom: '10px' },
-    title: { margin: 0, fontSize: '1.4rem' },
-    locationName: { fontSize: '1.6rem', fontWeight: 'bold', margin: '10px 0' },
-    description: { fontSize: '1.1rem', marginBottom: '10px' },
-    timeTag: { fontSize: '0.9rem', opacity: 0.8, marginBottom: '15px' },
-    btnDanger: { padding: '12px 24px', background: 'white', color: '#dc2626', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' },
-    btnClose: { padding: '8px 20px', background: '#1e293b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }
+    overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '40px', direction: 'rtl' },
+    dangerBox: { pointerEvents: 'auto', background: '#dc2626', color: 'white', padding: '30px', borderRadius: '20px', textAlign: 'center', width: '90%', maxWidth: '420px', border: '5px solid white', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' },
+    infoBox: { pointerEvents: 'auto', background: '#f59e0b', color: 'black', padding: '20px', borderRadius: '15px', textAlign: 'center', width: '85%', maxWidth: '360px', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' },
+    header: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '10px' },
+    title: { margin: 0, fontSize: '1.4rem', fontWeight: '800' },
+    locationName: { fontSize: '2rem', fontWeight: '900', margin: '15px 0' },
+    btnNavigate: { width: '100%', padding: '18px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' },
+    btnStop: { padding: '10px 25px', background: 'rgba(255,255,255,0.2)', color: 'inherit', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem' },
+    icon: { fontSize: '1.8rem' }
 };
 
 export default AlertListener;
