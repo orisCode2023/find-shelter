@@ -3,10 +3,10 @@ import { io } from 'socket.io-client';
 import * as geolib from 'geolib';
 import alertSound from '../audio/alert-sound.mp3';
 
-// קונפיגורציה - שנה לפי הצורך
+// קונפיגורציה
 const SOCKET_SERVER_URL = "http://localhost:3000"; 
-const DANGER_RADIUS = 12000; // 12 ק"מ לסכנה (אדום)
-const NEARBY_RADIUS = 30000; // 30 ק"מ להתראה סמוכה (כתום)
+const DANGER_RADIUS = 12000; 
+const NEARBY_RADIUS = 30000; 
 
 const AlertListener = () => {
     const [activeAlert, setActiveAlert] = useState(null);
@@ -18,7 +18,7 @@ const AlertListener = () => {
     const socketRef = useRef(null);
     const audioRef = useRef(new Audio(alertSound));
 
-    // --- 1. ניהול מיקום וזיהוי עיר ---
+    // --- 1. ניהול מיקום ---
 
     const updateLocation = async () => {
         return new Promise((resolve) => {
@@ -32,12 +32,11 @@ const AlertListener = () => {
                 lastKnownPos.current = coords;
 
                 try {
-                    // זיהוי שם העיר (Reverse Geocoding)
                     const response = await fetch(
                         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.latitude}&lon=${coords.longitude}&accept-language=he`
                     );
                     const data = await response.json();
-                    const city = data.address.city || data.address.town || data.address.village || data.address.settlement || "";
+                    const city = data.address.city || data.address.town || data.address.village || "";
                     if (city) {
                         setUserCity(city);
                         userCityRef.current = city;
@@ -53,38 +52,9 @@ const AlertListener = () => {
         });
     };
 
-    // פונקציית הניווט - פותרת את בעיית הקו הכחול בטלפון
-    const handleNavigate = () => {
-        if (!lastKnownPos.current) {
-            alert("מזהה מיקום... וודא שה-GPS פועל ונסה שוב");
-            updateLocation();
-            return;
-        }
-
-        const { latitude, longitude } = lastKnownPos.current;
-        
-        // כאן תכניס את קואורדינטות המקלט הכי קרוב מה-DB שלך
-        // כרגע שמתי מיקום לדוגמה (מרכז קרית גת)
-        const destLat = 31.6038; 
-        const destLng = 34.7640;
-
-        // בניית ה-URL בפורמט Directions הרשמי של Google
-        // origin = המיקום שלך, destination = המקלט, travelmode = הליכה
-        const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${destLat},${destLng}&travelmode=walking`;
-        
-        // פתיחה בחלון חדש (בטלפון זה יקפיץ הצעה לפתוח באפליקציית Maps)
-        const newWindow = window.open(googleMapsUrl, '_blank');
-        
-        // גיבוי למקרה שחוסם פופ-אפים עצר את הפתיחה
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-            window.location.href = googleMapsUrl;
-        }
-    };
-
-    // --- 2. ניהול תקשורת (Socket) ואירועים ---
+    // --- 2. ניהול תקשורת (Socket) ועיבוד התראות ---
 
     useEffect(() => {
-        // עדכון ראשוני ורישום מעקב רציף
         updateLocation();
         const watchId = navigator.geolocation.watchPosition((pos) => {
             lastKnownPos.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
@@ -93,11 +63,9 @@ const AlertListener = () => {
         socketRef.current = io(SOCKET_SERVER_URL);
 
         socketRef.current.on("red_alert", (data) => {
-            console.log("📢 התראה חדשה:", data.location);
             processAlert(data);
         });
 
-        // האזנה לטסט ידני מהדפדפן/כפתור חיצוני
         const handleManualTest = (event) => {
             processAlert({ 
                 location: event.detail?.location || "אזור בדיקה", 
@@ -115,7 +83,6 @@ const AlertListener = () => {
     }, []);
 
     const processAlert = async (data) => {
-        // אם אנחנו כבר במצב "סכנה", לא נותנים להתראות רחוקות יותר להחליף את המסך
         if (isUserInDanger && !data.isTest) return;
 
         const runCheck = (pos, city) => {
@@ -144,10 +111,7 @@ const AlertListener = () => {
             return false;
         };
 
-        // שלב 1: בדיקה מהירה מול המיקום האחרון בזיכרון (תגובה מיידית למניעת איבוד התראות)
         const foundDanger = runCheck(lastKnownPos.current, userCityRef.current);
-
-        // שלב 2: אם לא זוהתה סכנה, ננסה לרענן מיקום שוב ליתר ביטחון
         if (!foundDanger && !data.isTest) {
             const fresh = await updateLocation();
             if (fresh) runCheck(fresh, fresh.city);
@@ -156,7 +120,7 @@ const AlertListener = () => {
 
     const playSiren = () => {
         audioRef.current.loop = true;
-        audioRef.current.play().catch(() => console.log("אודיו דורש לחיצה ראשונית על הדף"));
+        audioRef.current.play().catch(() => {});
         if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
     };
 
@@ -187,14 +151,6 @@ const AlertListener = () => {
                     {isUserInDanger ? "צא מיד למרחב מוגן!" : "התראה בטווח של עד 30 ק\"מ"}
                 </p>
                 
-                {isUserInDanger && (
-                    <div style={styles.navSection}>
-                        <button onClick={handleNavigate} style={styles.btnNavigate}>
-                            🏃‍♂️ נווט למקלט הכי קרוב
-                        </button>
-                    </div>
-                )}
-
                 <div style={styles.actions}>
                     <button onClick={stopAlert} style={styles.btnStop}>
                         {isUserInDanger ? "הבנתי, הפסק סירנה" : "סגור"}
@@ -202,7 +158,6 @@ const AlertListener = () => {
                 </div>
             </div>
 
-            {/* הגדרת האנימציה - פועלת גם בטלפון */}
             <style>{`
                 @keyframes pulseRed {
                     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
@@ -214,7 +169,6 @@ const AlertListener = () => {
     );
 };
 
-// עיצוב (Styles)
 const styles = {
     overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10000, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '40px', direction: 'rtl', fontFamily: 'system-ui, sans-serif' },
     dangerBox: { pointerEvents: 'auto', background: '#dc2626', color: 'white', padding: '30px', borderRadius: '24px', textAlign: 'center', width: '90%', maxWidth: '420px', border: '5px solid white', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' },
@@ -223,8 +177,7 @@ const styles = {
     title: { margin: 0, fontSize: '1.4rem', fontWeight: '800' },
     locationName: { fontSize: '2.2rem', fontWeight: '900', margin: '15px 0', letterSpacing: '-1px' },
     instruction: { fontSize: '1.1rem', marginBottom: '20px', opacity: 0.9 },
-    btnNavigate: { width: '100%', padding: '18px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '14px', fontSize: '1.25rem', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px', boxShadow: '0 5px 15px rgba(0,0,0,0.2)' },
-    btnStop: { padding: '10px 25px', background: 'rgba(255,255,255,0.2)', color: 'inherit', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem' },
+    btnStop: { padding: '12px 30px', background: 'rgba(255,255,255,0.2)', color: 'inherit', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '10px', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 'bold' },
     icon: { fontSize: '2rem' }
 };
 
