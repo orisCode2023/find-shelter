@@ -6,6 +6,13 @@ function HomePage() {
     // ניתן בעתיד למשוך את הסטטוס הזה מה-Global State של האפליקציה
     const isAlertActive = false; 
 
+    // פונקציית עזר ליצירת כפתור חיוג
+    const EmergencyButton = ({ label, number }) => (
+        <a href={`tel:${number}`} className="contact-card dial-button">
+            <strong>{label}:</strong> {number}
+        </a>
+    );
+
     return (
         <div className="home-container">
             {/* Hero Section */}
@@ -57,10 +64,10 @@ function HomePage() {
             <section className="emergency-info">
                 <h2>מוקדי חירום וסיוע</h2>
                 <div className="emergency-grid">
-                    <div className="contact-card"><strong>משטרה:</strong> 100</div>
-                    <div className="contact-card"><strong>מד"א:</strong> 101</div>
-                    <div className="contact-card"><strong>כיבוי אש:</strong> 102</div>
-                    <div className="contact-card"><strong>פיקוד העורף:</strong> 104</div>
+                    <EmergencyButton label="משטרה" number="100" />
+                    <EmergencyButton label="מד''א" number="101" />
+                    <EmergencyButton label="כיבוי אש" number="102" />
+                    <EmergencyButton label="פיקוד העורף" number="104" />
                 </div>
             </section>
 
