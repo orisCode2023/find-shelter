@@ -82,12 +82,42 @@
     color: #ef4444;
 }
 
+/* HomePage.css */
+
 .emergency-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 15px;
-    max-width: 800px;
-    margin: 30px auto;
+    margin-top: 20px;
+}
+
+.dial-button {
+    text-decoration: none; /* מבטל קו תחתון של לינק */
+    color: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.dial-button:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.dial-button:active {
+    transform: translateY(0);
+    background: #dee2e6;
+}
+
+.dial-button strong {
+    margin-left: 5px;
 }
 
 .contact-card {
